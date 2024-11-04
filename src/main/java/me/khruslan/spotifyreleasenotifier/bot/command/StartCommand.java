@@ -1,14 +1,13 @@
 package me.khruslan.spotifyreleasenotifier.bot.command;
 
-import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
-import me.khruslan.spotifyreleasenotifier.bot.answer.WelcomeAnswer;
+import me.khruslan.spotifyreleasenotifier.bot.message.Answer;
 
 public class StartCommand extends Command {
     public static final String NAME = "/start";
 
     @Override
     public Answer execute() {
-        return new WelcomeAnswer();
+        return Answer.welcome();
     }
 
     @Override

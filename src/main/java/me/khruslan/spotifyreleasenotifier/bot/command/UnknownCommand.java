@@ -1,7 +1,6 @@
 package me.khruslan.spotifyreleasenotifier.bot.command;
 
-import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
-import me.khruslan.spotifyreleasenotifier.bot.answer.UnrecognizedCommandAnswer;
+import me.khruslan.spotifyreleasenotifier.bot.message.Answer;
 
 public class UnknownCommand extends Command {
     private final String name;
@@ -12,7 +11,7 @@ public class UnknownCommand extends Command {
 
     @Override
     public Answer execute() {
-        return new UnrecognizedCommandAnswer(name);
+        return Answer.unrecognizedCommand(name);
     }
 
     @Override
