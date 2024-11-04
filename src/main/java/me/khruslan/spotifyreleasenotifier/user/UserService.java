@@ -9,15 +9,15 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    private final UserRepository repository;
+    private final UserDao userDao;
 
     @Autowired
-    public UserService(UserRepository repository) {
-        this.repository = repository;
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
     }
 
     public boolean userExists(Long telegramId) {
-        if (repository.userExists(telegramId)) {
+        if (userDao.userExists(telegramId)) {
             logger.debug("Found user with telegramId: {}", telegramId);
             return true;
         } else {
@@ -27,7 +27,7 @@ public class UserService {
     }
 
     public void createUser(User user) {
-        repository.createUser(user);
+        userDao.createUser(user);
         logger.debug("Created user: {}", user);
     }
 }

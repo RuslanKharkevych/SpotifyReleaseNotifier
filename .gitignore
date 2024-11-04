@@ -32,5 +32,6 @@ build/
 .DS_Store
 
 ### Properties ###
+src/main/resources/hibernate.properties
 src/main/resources/telegrambot.properties
 src/main/resources/spotifyapp.properties
