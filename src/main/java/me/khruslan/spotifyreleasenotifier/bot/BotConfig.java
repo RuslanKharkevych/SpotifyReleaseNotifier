@@ -8,9 +8,13 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Configuration
 public class BotConfig {
+    private static final String TELEGRAM_URL = "https://t.me/";
 
     @Value("${telegram.bot.token}")
     private String token;
+
+    @Value("${telegram.bot.username}")
+    private String username;
 
     @Bean
     public TelegramClient telegramClient() {
@@ -19,5 +23,9 @@ public class BotConfig {
 
     public String getToken() {
         return token;
+    }
+
+    public String getAbsoluteUrl() {
+        return TELEGRAM_URL + username;
     }
 }

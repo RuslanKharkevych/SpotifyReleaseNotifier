@@ -37,14 +37,14 @@ public class MessageHandler implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private void handleTextMessage(Message message) {
-        var command = commandFactory.create(message.getText());
+        var command = commandFactory.create(message.getText(), message.getChatId());
         logger.debug("Executing command: {}", command);
         var answer = command.execute();
         logger.debug("Command completed with answer: {}", answer);
         sendMessage(message.getChatId(), answer.getMessage());
     }
 
-    private void sendMessage(Long chatId, String message) {
+    public void sendMessage(Long chatId, String message) {
         var sendMessage = buildSendMessageMethod(chatId, message);
 
         try {

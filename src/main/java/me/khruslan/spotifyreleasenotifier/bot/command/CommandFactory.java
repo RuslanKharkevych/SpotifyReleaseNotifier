@@ -13,10 +13,10 @@ public class CommandFactory {
         this.spotifyService = spotifyService;
     }
 
-    public Command create(String name) {
+    public Command create(String name, Long chatId) {
         return switch (name) {
             case (StartCommand.NAME) -> new StartCommand();
-            case (LoginCommand.NAME) -> new LoginCommand(spotifyService);
+            case (LoginCommand.NAME) -> new LoginCommand(chatId, spotifyService);
             default -> new UnknownCommand(name);
         };
     }
