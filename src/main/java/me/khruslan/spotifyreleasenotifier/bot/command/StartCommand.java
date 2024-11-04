@@ -4,7 +4,7 @@ import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
 import me.khruslan.spotifyreleasenotifier.bot.answer.WelcomeAnswer;
 
 public class StartCommand extends Command {
-    static final String NAME = "/start";
+    public static final String NAME = "/start";
 
     @Override
     public Answer execute() {

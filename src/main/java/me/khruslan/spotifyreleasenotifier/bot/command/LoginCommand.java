@@ -2,20 +2,20 @@ package me.khruslan.spotifyreleasenotifier.bot.command;
 
 import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
 import me.khruslan.spotifyreleasenotifier.bot.answer.LoginUrlAnswer;
-import me.khruslan.spotifyreleasenotifier.spotify.SpotifyClient;
+import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
 
 public class LoginCommand extends Command {
-    static final String NAME = "/login";
+    public static final String NAME = "/login";
 
-    private final SpotifyClient spotifyClient;
+    private final SpotifyService spotifyService;
 
-    public LoginCommand(SpotifyClient spotifyClient) {
-        this.spotifyClient = spotifyClient;
+    public LoginCommand(SpotifyService spotifyService) {
+        this.spotifyService = spotifyService;
     }
 
     @Override
     public Answer execute() {
-        String url = spotifyClient.getAuthorizationUrl();
+        var url = spotifyService.getAuthorizationUrl();
         return new LoginUrlAnswer(url);
     }
 

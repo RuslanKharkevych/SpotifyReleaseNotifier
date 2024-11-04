@@ -4,7 +4,6 @@ import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
 import me.khruslan.spotifyreleasenotifier.bot.answer.UnrecognizedCommandAnswer;
 
 public class UnknownCommand extends Command {
-
     private final String name;
 
     public UnknownCommand(String name) {
