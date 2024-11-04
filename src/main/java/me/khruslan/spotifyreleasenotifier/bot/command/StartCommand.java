@@ -1,7 +1,7 @@
-package me.khruslan.spotifyreleasenotifier.command;
+package me.khruslan.spotifyreleasenotifier.bot.command;
 
-import me.khruslan.spotifyreleasenotifier.answer.Answer;
-import me.khruslan.spotifyreleasenotifier.answer.WelcomeAnswer;
+import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
+import me.khruslan.spotifyreleasenotifier.bot.answer.WelcomeAnswer;
 
 public class StartCommand extends Command {
     static final String NAME = "/start";

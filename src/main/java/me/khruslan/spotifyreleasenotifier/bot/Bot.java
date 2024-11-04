@@ -1,6 +1,6 @@
-package me.khruslan.spotifyreleasenotifier;
+package me.khruslan.spotifyreleasenotifier.bot;
 
-import me.khruslan.spotifyreleasenotifier.command.Command;
+import me.khruslan.spotifyreleasenotifier.bot.command.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import me.khruslan.spotifyreleasenotifier.answer.Answer;
+import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
 
 public class Bot extends TelegramLongPollingBot {
     private static final String TAG = "Bot";

@@ -1,7 +1,7 @@
-package me.khruslan.spotifyreleasenotifier.command;
+package me.khruslan.spotifyreleasenotifier.bot.command;
 
-import me.khruslan.spotifyreleasenotifier.answer.Answer;
-import me.khruslan.spotifyreleasenotifier.answer.UnrecognizedCommandAnswer;
+import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
+import me.khruslan.spotifyreleasenotifier.bot.answer.UnrecognizedCommandAnswer;
 
 public class UnknownCommand extends Command {
 

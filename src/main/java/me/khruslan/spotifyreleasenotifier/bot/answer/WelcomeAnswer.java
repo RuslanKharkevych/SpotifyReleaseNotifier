@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.answer;
+package me.khruslan.spotifyreleasenotifier.bot.answer;
 
 public class WelcomeAnswer extends Answer {
     @Override

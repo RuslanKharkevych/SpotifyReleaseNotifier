@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.answer;
+package me.khruslan.spotifyreleasenotifier.bot.answer;
 
 public class UnrecognizedCommandAnswer extends Answer {
     private final String commandName;

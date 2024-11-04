@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.answer;
+package me.khruslan.spotifyreleasenotifier.bot.answer;
 
 public abstract class Answer {
     public abstract String getMessage();

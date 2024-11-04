@@ -31,5 +31,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-### Telegram Bot Properties ###
+### Properties ###
 src/main/resources/telegrambot.properties
+src/main/resources/spotifyapp.properties
