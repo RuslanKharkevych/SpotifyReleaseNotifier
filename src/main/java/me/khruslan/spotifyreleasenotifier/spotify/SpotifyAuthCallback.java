@@ -1,7 +1,7 @@
 package me.khruslan.spotifyreleasenotifier.spotify;
 
 import me.khruslan.spotifyreleasenotifier.bot.BotConfig;
-import me.khruslan.spotifyreleasenotifier.bot.message.MessageHandler;
+import me.khruslan.spotifyreleasenotifier.bot.message.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +16,13 @@ public class SpotifyAuthCallback {
 
     private final BotConfig botConfig;
     private final SpotifyService spotifyService;
-    private final MessageHandler messageHandler;
+    private final MessageService messageService;
 
     @Autowired
-    public SpotifyAuthCallback(BotConfig botConfig, SpotifyService spotifyService, MessageHandler messageHandler) {
+    public SpotifyAuthCallback(BotConfig botConfig, SpotifyService spotifyService, MessageService messageService) {
         this.botConfig = botConfig;
         this.spotifyService = spotifyService;
-        this.messageHandler = messageHandler;
+        this.messageService = messageService;
     }
 
     @GetMapping("${spotify.app.redirectPath}")
@@ -34,10 +34,10 @@ public class SpotifyAuthCallback {
         logger.debug("Handling Spotify auth redirect: chatId={}", chatId);
         if (code != null && spotifyService.authorize(code)) {
             logger.debug("Successfully authenticated with Spotify");
-            messageHandler.sendMessage(Long.valueOf(chatId), "Logged in!");
+            messageService.sendMessage(Long.valueOf(chatId), "Logged in!");
         } else {
             logger.debug("Failed to authenticate with Spotify: error={}", error);
-            messageHandler.sendMessage(Long.valueOf(chatId), "Failed to log in");
+            messageService.sendMessage(Long.valueOf(chatId), "Failed to log in");
         }
         return new RedirectView(botConfig.getAbsoluteUrl());
     }
