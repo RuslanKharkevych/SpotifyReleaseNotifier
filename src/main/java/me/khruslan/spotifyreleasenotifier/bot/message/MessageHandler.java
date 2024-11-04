@@ -1,6 +1,5 @@
 package me.khruslan.spotifyreleasenotifier.bot.message;
 
-import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
 import me.khruslan.spotifyreleasenotifier.bot.command.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,38 +27,38 @@ public class MessageHandler implements LongPollingSingleThreadUpdateConsumer {
 
     @Override
     public void consume(Update update) {
-        if (!update.hasMessage()) {
-            logger.info("Skipped update without message: updateId={}", update.getUpdateId());
-            return;
+        logger.debug("Handling update: {}", update);
+
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            handleTextMessage(update.getMessage());
+        } else {
+            logger.debug("Skipping update without text message");
         }
+    }
 
-        Message message = update.getMessage();
-        if (!message.hasText()) {
-            logger.info("Skipped message without text: messageId={}", message.getMessageId());
-            return;
-        }
-
-        String messageText = message.getText();
-        logger.info("Message received: {}", messageText);
-
-        Command command = commandFactory.create(messageText);
-        logger.info("Executing command: {}", command);
-        Answer answer = command.execute();
-        logger.info("Command completed with answer: {}", answer);
+    private void handleTextMessage(Message message) {
+        var command = commandFactory.create(message.getText());
+        logger.debug("Executing command: {}", command);
+        var answer = command.execute();
+        logger.debug("Command completed with answer: {}", answer);
         sendMessage(message.getChatId(), answer.getMessage());
     }
 
     private void sendMessage(Long chatId, String message) {
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(message)
-                .build();
+        var sendMessage = buildSendMessageMethod(chatId, message);
 
         try {
             telegramClient.execute(sendMessage);
-            logger.info("Message sent: {}", message);
+            logger.debug("Message sent: {}", message);
         } catch (TelegramApiException e) {
             logger.error("Failed to send message", e);
         }
+    }
+
+    private SendMessage buildSendMessageMethod(Long chatId, String message) {
+        return SendMessage.builder()
+                .chatId(chatId)
+                .text(message)
+                .build();
     }
 }
