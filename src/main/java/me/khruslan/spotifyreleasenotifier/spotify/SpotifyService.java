@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 
 import java.io.IOException;
 
@@ -21,26 +22,24 @@ public class SpotifyService {
         this.api = api;
     }
 
-    public String getAuthorizationUrl(Long chatId) {
-        logger.debug("Fetching authorization URL: chatId={}", chatId);
-        var request = api.authorizationCodeUri().state(chatId.toString()).build();
+    public String getAuthUrl(String authState) {
+        logger.debug("Fetching authorization URL: authState={}", authState);
+        var request = api.authorizationCodeUri().state(authState).build();
         var url = request.execute().toString();
         logger.debug("Fetched authorization URL: {}", url);
         return url;
     }
 
-    public boolean authorize(String code) {
-        logger.debug("Authorizing with code: ${}", code);
+    public AuthorizationCodeCredentials getAuthCredentials(String code) {
+        logger.debug("Fetching auth credentials: code={}", code);
         var request = api.authorizationCode(code).build();
         try {
             var credentials = request.execute();
-            logger.debug("Successfully authorized: credentials={}", credentials);
-            api.setAccessToken(credentials.getAccessToken());
-            api.setRefreshToken(credentials.getRefreshToken());
-            return true;
+            logger.debug("Successfully fetched auth credentials: {}", credentials);
+            return credentials;
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            logger.error("Failed to authorize", e);
-            return false;
+            logger.error("Failed to fetch auth credentials", e);
+            return null;
         }
     }
 }

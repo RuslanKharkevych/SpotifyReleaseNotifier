@@ -1,6 +1,7 @@
 package me.khruslan.spotifyreleasenotifier.bot.message;
 
 import me.khruslan.spotifyreleasenotifier.bot.command.CommandFactory;
+import me.khruslan.spotifyreleasenotifier.user.metadata.UserMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,8 @@ public class MessageHandler implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private void handleTextMessage(Message message) {
-        var command = commandFactory.create(message.getText(), message.getChatId());
+        var metadata = new UserMetadata(message.getFrom().getId(), message.getChatId());
+        var command = commandFactory.create(message.getText(), metadata);
         logger.debug("Executing command: {}", command);
         var answer = command.execute();
         logger.debug("Command completed with answer: {}", answer);
