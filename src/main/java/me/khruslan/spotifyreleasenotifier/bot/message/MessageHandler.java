@@ -1,6 +1,6 @@
 package me.khruslan.spotifyreleasenotifier.bot.message;
 
-import me.khruslan.spotifyreleasenotifier.bot.command.Command;
+import me.khruslan.spotifyreleasenotifier.bot.command.CommandFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,10 @@ public class MessageHandler implements LongPollingSingleThreadUpdateConsumer {
     private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
     private final TelegramClient telegramClient;
-    private final Command.Factory commandFactory;
+    private final CommandFactory commandFactory;
 
     @Autowired
-    public MessageHandler(TelegramClient telegramClient, Command.Factory commandFactory) {
+    public MessageHandler(TelegramClient telegramClient, CommandFactory commandFactory) {
         this.telegramClient = telegramClient;
         this.commandFactory = commandFactory;
     }
