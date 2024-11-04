@@ -1,35 +1,51 @@
 package me.khruslan.spotifyreleasenotifier.bot;
 
+import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
 import me.khruslan.spotifyreleasenotifier.bot.command.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import me.khruslan.spotifyreleasenotifier.bot.answer.Answer;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-public class Bot extends TelegramLongPollingBot {
+@Component
+public class Bot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private static final String TAG = "Bot";
 
     private static final Logger logger = LoggerFactory.getLogger(TAG);
 
-    private final String username;
-    private final Command.Factory commandFactory = new Command.Factory();
+    private final String token;
+    private final TelegramClient telegramClient;
 
-    public Bot(String username, String token) {
-        super(token);
-        this.username = username;
+    @Autowired
+    private Command.Factory commandFactory;
+
+    public Bot(@Value("${telegram.bot.token}") String token) {
+        this.token = token;
+        telegramClient = new OkHttpTelegramClient(token);
     }
 
     @Override
-    public String getBotUsername() {
-        return username;
+    public String getBotToken() {
+        return token;
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public LongPollingUpdateConsumer getUpdatesConsumer() {
+        return this;
+    }
+
+    @Override
+    public void consume(Update update) {
         if (!update.hasMessage()) {
             logger.info("Skipped update without message: updateId={}", update.getUpdateId());
             return;
@@ -58,7 +74,7 @@ public class Bot extends TelegramLongPollingBot {
                 .build();
 
         try {
-            execute(sendMessage);
+            telegramClient.execute(sendMessage);
             logger.info("Message sent: {}", message);
         } catch (TelegramApiException e) {
             logger.error("Failed to send message", e);
