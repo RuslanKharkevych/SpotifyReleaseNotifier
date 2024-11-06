@@ -30,4 +30,9 @@ public class UserService {
         userDao.createUser(user);
         logger.debug("Created user: {}", user);
     }
+
+    public void deleteUser(Long telegramId) {
+        userDao.deleteUser(telegramId);
+        logger.debug("Deleted user with telegramId: {}", telegramId);
+    }
 }

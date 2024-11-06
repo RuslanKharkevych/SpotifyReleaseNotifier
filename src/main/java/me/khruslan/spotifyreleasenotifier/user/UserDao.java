@@ -17,7 +17,7 @@ public class UserDao {
     public boolean userExists(Long telegramId) {
         var transaction = sessionFactory.getCurrentSession().beginTransaction();
         var userExists = sessionFactory.getCurrentSession()
-                .createQuery("from User where telegramId=:telegramId", User.class)
+                .createQuery("FROM User WHERE telegramId=:telegramId", User.class)
                 .setParameter("telegramId", telegramId)
                 .getSingleResultOrNull() != null;
         transaction.commit();
@@ -27,6 +27,15 @@ public class UserDao {
     public void createUser(User user) {
         var transaction = sessionFactory.getCurrentSession().beginTransaction();
         sessionFactory.getCurrentSession().persist(user);
+        transaction.commit();
+    }
+
+    public void deleteUser(Long telegramId) {
+        var transaction = sessionFactory.getCurrentSession().beginTransaction();
+        sessionFactory.getCurrentSession()
+                .createMutationQuery("DELETE FROM User WHERE telegramId=:telegramId")
+                .setParameter("telegramId", telegramId)
+                .executeUpdate();
         transaction.commit();
     }
 }

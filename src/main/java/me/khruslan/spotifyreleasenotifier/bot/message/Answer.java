@@ -20,6 +20,14 @@ public class Answer {
         return new Answer("Already logged in!");
     }
 
+    public static Answer notLoggedIn() {
+        return new Answer("Not logged in!");
+    }
+
+    public static Answer successfullyLoggedOut() {
+        return new Answer("Successfully logged out!");
+    }
+
     public static Answer unrecognizedCommand(String commandName) {
         return new Answer("Couldn't recognize command " + commandName);
     }

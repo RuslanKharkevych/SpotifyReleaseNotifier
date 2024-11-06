@@ -21,6 +21,7 @@ public class CommandFactory {
         return switch (name) {
             case (StartCommand.NAME) -> new StartCommand();
             case (LoginCommand.NAME) -> new LoginCommand(userService, spotifyService, metadata);
+            case (LogoutCommand.NAME) -> new LogoutCommand(userService, metadata);
             default -> new UnknownCommand(name);
         };
     }
