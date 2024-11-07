@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -14,6 +16,12 @@ public class UserService {
     @Autowired
     public UserService(UserDao userDao) {
         this.userDao = userDao;
+    }
+
+    public List<User> getAllUsers() {
+        var users = userDao.getAllUsers();
+        logger.debug("Fetched users: {}", users);
+        return users;
     }
 
     public boolean userExists(Long telegramId) {
@@ -29,6 +37,11 @@ public class UserService {
     public void createUser(User user) {
         userDao.createUser(user);
         logger.debug("Created user: {}", user);
+    }
+
+    public void updateUser(User user) {
+        userDao.updateUser(user);
+        logger.debug("Updated user: {}", user);
     }
 
     public void deleteUser(Long telegramId) {

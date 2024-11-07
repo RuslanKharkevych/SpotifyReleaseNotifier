@@ -2,7 +2,7 @@ package me.khruslan.spotifyreleasenotifier.bot.command;
 
 import me.khruslan.spotifyreleasenotifier.bot.message.Answer;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
-import me.khruslan.spotifyreleasenotifier.user.metadata.UserMetadata;
+import me.khruslan.spotifyreleasenotifier.user.UserMetadata;
 
 public class LogoutCommand extends Command {
     public static final String NAME = "/logout";

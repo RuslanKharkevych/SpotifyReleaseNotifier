@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.user.metadata;
+package me.khruslan.spotifyreleasenotifier.user;
 
 public record UserMetadata(Long userId, Long chatId) {
 

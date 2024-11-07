@@ -1,11 +1,10 @@
-package me.khruslan.spotifyreleasenotifier.spotify.auth;
+package me.khruslan.spotifyreleasenotifier.spotify;
 
 import me.khruslan.spotifyreleasenotifier.bot.BotConfig;
 import me.khruslan.spotifyreleasenotifier.bot.message.MessageService;
-import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
 import me.khruslan.spotifyreleasenotifier.user.User;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
-import me.khruslan.spotifyreleasenotifier.user.metadata.UserMetadata;
+import me.khruslan.spotifyreleasenotifier.user.UserMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,7 @@ public class SpotifyAuthCallback {
         if (credentials != null) {
             logger.debug("Successfully authenticated with Spotify");
             messageService.sendMessage(userMetadata.chatId(), "Logged in!");
-            createUser(userMetadata.userId(), credentials);
+            createUser(userMetadata, credentials);
         } else {
             logger.debug("Failed to authenticate with Spotify: error={}", error);
             messageService.sendMessage(userMetadata.chatId(), "Failed to log in");
@@ -59,8 +58,8 @@ public class SpotifyAuthCallback {
         return new RedirectView(botConfig.getAbsoluteUrl());
     }
 
-    private void createUser(Long id, AuthorizationCodeCredentials credentials) {
-        var user = new User(id, credentials.getAccessToken(), credentials.getRefreshToken());
+    private void createUser(UserMetadata metadata, AuthorizationCodeCredentials credentials) {
+        var user = new User(metadata, credentials);
         logger.debug("Creating new user: {}", user);
         userService.createUser(user);
     }

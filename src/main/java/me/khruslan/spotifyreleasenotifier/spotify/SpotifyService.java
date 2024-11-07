@@ -6,13 +6,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.enums.AuthorizationScope;
+import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
+import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Artist;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class SpotifyService {
+    private static final int PAGE_SIZE = 50;
+    private static final long DELAY_BETWEEN_REQUESTS_MILLIS = 30_000L;
+
     private static final Logger logger = LoggerFactory.getLogger(SpotifyService.class);
 
     private final SpotifyApi api;
@@ -24,7 +36,7 @@ public class SpotifyService {
 
     public String getAuthUrl(String authState) {
         logger.debug("Fetching authorization URL: authState={}", authState);
-        var request = api.authorizationCodeUri().state(authState).build();
+        var request = api.authorizationCodeUri().state(authState).scope(AuthorizationScope.USER_FOLLOW_READ).build();
         var url = request.execute().toString();
         logger.debug("Fetched authorization URL: {}", url);
         return url;
@@ -33,6 +45,7 @@ public class SpotifyService {
     public AuthorizationCodeCredentials getAuthCredentials(String code) {
         logger.debug("Fetching auth credentials: code={}", code);
         var request = api.authorizationCode(code).build();
+
         try {
             var credentials = request.execute();
             logger.debug("Successfully fetched auth credentials: {}", credentials);
@@ -40,6 +53,96 @@ public class SpotifyService {
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             logger.error("Failed to fetch auth credentials", e);
             return null;
+        }
+    }
+
+    public AuthorizationCodeCredentials refreshAccessToken(String refreshToken) {
+        logger.debug("Refreshing access token: refreshToken={}", refreshToken);
+        api.setRefreshToken(refreshToken);
+        var request = api.authorizationCodeRefresh().build();
+
+        try {
+            var credentials = request.execute();
+            logger.debug("Successfully refreshed access token: {}", credentials);
+            return credentials;
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            logger.error("Failed to refresh access token", e);
+            return null;
+        } finally {
+            api.setRefreshToken(null);
+        }
+    }
+
+    public List<AlbumSimplified> getNewAlbums(String accessToken, LocalDate latCheckedDate) {
+        logger.debug("Fetching new albums: accessToken={}, latCheckedDate={}", accessToken, latCheckedDate);
+        var albums = new ArrayList<AlbumSimplified>();
+
+        for (var artist : getFollowedArtists(accessToken)) {
+            waitBeforeNextRequest();
+            var artistAlbums = getAlbums(artist.getId());
+            var newAlbums = Arrays.stream(artistAlbums)
+                    .filter(album -> releasedAfter(album, latCheckedDate))
+                    .toList();
+            logger.debug("Fetch new albums progress: newAlbums={}, artist={}", newAlbums, artist);
+            albums.addAll(newAlbums);
+        }
+
+        logger.debug("Fetched new albums: {}", albums);
+        return albums;
+    }
+
+    // TODO: Pagination
+    private Artist[] getFollowedArtists(String accessToken) {
+        logger.debug("Fetching followed artists: accessToken={}", accessToken);
+        api.setAccessToken(accessToken);
+        var request = api.getUsersFollowedArtists(ModelObjectType.ARTIST).limit(PAGE_SIZE).build();
+
+        try {
+            var artists = request.execute().getItems();
+            logger.debug("Fetched followed artists: {}", Arrays.toString(artists));
+            return artists;
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            logger.error("Failed to get followed artists", e);
+            return new Artist[]{};
+        } finally {
+            api.setAccessToken(accessToken);
+        }
+    }
+
+    // TODO: Pagination
+    private AlbumSimplified[] getAlbums(String artistId) {
+        logger.debug("Fetching albums: artistId={}", artistId);
+        var request = api.getArtistsAlbums(artistId).limit(PAGE_SIZE).build();
+
+        try {
+            var albums = request.execute().getItems();
+            logger.debug("Fetched albums: {}", Arrays.toString(albums));
+            return albums;
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            logger.error("Failed to fetch albums", e);
+            return new AlbumSimplified[]{};
+        }
+    }
+
+    // TODO: Move to ReleaseNotifier
+    private boolean releasedAfter(AlbumSimplified album, LocalDate lastCheckedDate) {
+        try {
+            var releaseDate = LocalDate.parse(album.getReleaseDate());
+            return !lastCheckedDate.isBefore(releaseDate);
+        } catch (DateTimeParseException e) {
+            logger.error("Failed to parse release date: album={}", album);
+            return false;
+        }
+    }
+
+    private void waitBeforeNextRequest() {
+        logger.debug("Waiting {} ms before the next request", DELAY_BETWEEN_REQUESTS_MILLIS);
+
+        try {
+            Thread.sleep(DELAY_BETWEEN_REQUESTS_MILLIS);
+        } catch (InterruptedException e) {
+            logger.error("Thread has been interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 }

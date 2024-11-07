@@ -1,7 +1,7 @@
 package me.khruslan.spotifyreleasenotifier.bot.message;
 
 import me.khruslan.spotifyreleasenotifier.bot.command.CommandFactory;
-import me.khruslan.spotifyreleasenotifier.user.metadata.UserMetadata;
+import me.khruslan.spotifyreleasenotifier.user.UserMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

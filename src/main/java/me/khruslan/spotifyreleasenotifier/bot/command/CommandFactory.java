@@ -2,7 +2,7 @@ package me.khruslan.spotifyreleasenotifier.bot.command;
 
 import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
-import me.khruslan.spotifyreleasenotifier.user.metadata.UserMetadata;
+import me.khruslan.spotifyreleasenotifier.user.UserMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
