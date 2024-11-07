@@ -1,7 +1,6 @@
-package me.khruslan.spotifyreleasenotifier.bot.message;
+package me.khruslan.spotifyreleasenotifier.telegram.message;
 
 public class Answer {
-
     private final String message;
 
     private Answer(String message) {

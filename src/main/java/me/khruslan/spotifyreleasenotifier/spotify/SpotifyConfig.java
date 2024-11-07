@@ -8,13 +8,10 @@ import se.michaelthelin.spotify.SpotifyHttpManager;
 
 @Configuration
 public class SpotifyConfig {
-
     @Bean
-    public SpotifyApi api(
-            @Value("${spotify.app.clientId}") String clientId,
-            @Value("${spotify.app.clientSecret}") String clientSecret,
-            @Value("${spotify.app.redirectUrl}") String redirectUrl
-    ) {
+    public SpotifyApi api(@Value("${spotify.app.clientId}") String clientId,
+                          @Value("${spotify.app.clientSecret}") String clientSecret,
+                          @Value("${spotify.app.redirectUrl}") String redirectUrl) {
         return new SpotifyApi.Builder()
                 .setClientId(clientId)
                 .setClientSecret(clientSecret)

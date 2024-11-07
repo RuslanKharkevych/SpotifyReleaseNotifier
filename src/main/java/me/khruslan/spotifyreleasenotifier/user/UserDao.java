@@ -1,13 +1,23 @@
 package me.khruslan.spotifyreleasenotifier.user;
 
+import me.khruslan.spotifyreleasenotifier.user.model.UserDto;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+// TODO: Logging & error handling
 @Repository
 public class UserDao {
+    private static final String TABLE_USERS = "User";
+    private static final String COLUMN_TELEGRAM_ID = "telegramId";
+    private static final String PARAM_TELEGRAM_ID = COLUMN_TELEGRAM_ID;
+
+    private static final String QUERY_SELECT_ALL_USERS = "FROM " + TABLE_USERS;
+    private static final String QUERY_SELECT_USER_BY_TELEGRAM_ID =
+            QUERY_SELECT_ALL_USERS + " WHERE " + COLUMN_TELEGRAM_ID + "=:" + PARAM_TELEGRAM_ID;
+    private static final String QUERY_DELETE_USER_BY_TELEGRAM_ID = "DELETE " + QUERY_SELECT_USER_BY_TELEGRAM_ID;
 
     private final SessionFactory sessionFactory;
 
@@ -15,42 +25,42 @@ public class UserDao {
         this.sessionFactory = sessionFactory;
     }
 
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         var transaction = beginTransaction();
         var users = sessionFactory.getCurrentSession()
-                .createQuery("FROM User", User.class)
+                .createQuery(QUERY_SELECT_ALL_USERS, UserDto.class)
                 .getResultList();
         transaction.commit();
         return users;
     }
 
-    public boolean userExists(Long telegramId) {
+    public boolean userExists(long telegramId) {
         var transaction = beginTransaction();
         var userExists = sessionFactory.getCurrentSession()
-                .createQuery("FROM User WHERE telegramId=:telegramId", User.class)
-                .setParameter("telegramId", telegramId)
+                .createQuery(QUERY_SELECT_USER_BY_TELEGRAM_ID, UserDto.class)
+                .setParameter(PARAM_TELEGRAM_ID, telegramId)
                 .getSingleResultOrNull() != null;
         transaction.commit();
         return userExists;
     }
 
-    public void createUser(User user) {
+    public void createUser(UserDto user) {
         var transaction = beginTransaction();
         sessionFactory.getCurrentSession().persist(user);
         transaction.commit();
     }
 
-    public void updateUser(User user) {
+    public void updateUser(UserDto user) {
         var transaction = beginTransaction();
         sessionFactory.getCurrentSession().merge(user);
         transaction.commit();
     }
 
-    public void deleteUser(Long telegramId) {
+    public void deleteUser(long telegramId) {
         var transaction = beginTransaction();
         sessionFactory.getCurrentSession()
-                .createMutationQuery("DELETE FROM User WHERE telegramId=:telegramId")
-                .setParameter("telegramId", telegramId)
+                .createMutationQuery(QUERY_DELETE_USER_BY_TELEGRAM_ID)
+                .setParameter(PARAM_TELEGRAM_ID, telegramId)
                 .executeUpdate();
         transaction.commit();
     }

@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.bot.message;
+package me.khruslan.spotifyreleasenotifier.telegram;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,30 +9,27 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Service
-public class MessageService {
-    private static final Logger logger = LoggerFactory.getLogger(MessageService.class);
+public class TelegramService {
+    private static final Logger logger = LoggerFactory.getLogger(TelegramService.class);
 
     private final TelegramClient telegramClient;
 
     @Autowired
-    public MessageService(TelegramClient telegramClient) {
+    public TelegramService(TelegramClient telegramClient) {
         this.telegramClient = telegramClient;
     }
 
     public void sendMessage(Long chatId, String message) {
-        var sendMessage = buildSendMessageMethod(chatId, message);
-        try {
-            telegramClient.execute(sendMessage);
-            logger.debug("Message sent: {}", message);
-        } catch (TelegramApiException e) {
-            logger.error("Failed to send message", e);
-        }
-    }
-
-    private SendMessage buildSendMessageMethod(Long chatId, String message) {
-        return SendMessage.builder()
+        var sendMessage = SendMessage.builder()
                 .chatId(chatId)
                 .text(message)
                 .build();
+
+        try {
+            telegramClient.execute(sendMessage);
+            logger.debug("Message sent: {}", sendMessage);
+        } catch (TelegramApiException e) {
+            logger.error("Failed to send message", e);
+        }
     }
 }

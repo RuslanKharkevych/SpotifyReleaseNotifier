@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.bot;
+package me.khruslan.spotifyreleasenotifier.telegram;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -7,7 +7,7 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Configuration
-public class BotConfig {
+public class TelegramConfig {
     private static final String TELEGRAM_URL = "https://t.me/";
 
     @Value("${telegram.bot.token}")

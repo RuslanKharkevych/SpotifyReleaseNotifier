@@ -1,8 +1,8 @@
-package me.khruslan.spotifyreleasenotifier.bot.command;
+package me.khruslan.spotifyreleasenotifier.telegram.command;
 
 import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
-import me.khruslan.spotifyreleasenotifier.user.UserMetadata;
+import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,11 +17,11 @@ public class CommandFactory {
         this.spotifyService = spotifyService;
     }
 
-    public Command create(String name, UserMetadata metadata) {
+    public Command create(String name, TelegramCredentials credentials) {
         return switch (name) {
             case (StartCommand.NAME) -> new StartCommand();
-            case (LoginCommand.NAME) -> new LoginCommand(userService, spotifyService, metadata);
-            case (LogoutCommand.NAME) -> new LogoutCommand(userService, metadata);
+            case (LoginCommand.NAME) -> new LoginCommand(userService, spotifyService, credentials);
+            case (LogoutCommand.NAME) -> new LogoutCommand(userService, credentials);
             default -> new UnknownCommand(name);
         };
     }

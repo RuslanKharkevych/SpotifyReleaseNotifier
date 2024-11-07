@@ -1,6 +1,6 @@
-package me.khruslan.spotifyreleasenotifier.bot.command;
+package me.khruslan.spotifyreleasenotifier.telegram.command;
 
-import me.khruslan.spotifyreleasenotifier.bot.message.Answer;
+import me.khruslan.spotifyreleasenotifier.telegram.message.Answer;
 
 public class UnknownCommand extends Command {
     private final String name;

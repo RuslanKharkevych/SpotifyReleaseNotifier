@@ -1,29 +1,29 @@
-package me.khruslan.spotifyreleasenotifier.bot.command;
+package me.khruslan.spotifyreleasenotifier.telegram.command;
 
-import me.khruslan.spotifyreleasenotifier.bot.message.Answer;
+import me.khruslan.spotifyreleasenotifier.telegram.message.Answer;
 import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
-import me.khruslan.spotifyreleasenotifier.user.UserMetadata;
+import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
 
 public class LoginCommand extends Command {
     public static final String NAME = "/login";
 
     private final UserService userService;
     private final SpotifyService spotifyService;
-    private final UserMetadata userMetadata;
+    private final TelegramCredentials credentials;
 
-    public LoginCommand(UserService userService, SpotifyService spotifyService, UserMetadata userMetadata) {
+    public LoginCommand(UserService userService, SpotifyService spotifyService, TelegramCredentials credentials) {
         this.userService = userService;
         this.spotifyService = spotifyService;
-        this.userMetadata = userMetadata;
+        this.credentials = credentials;
     }
 
     @Override
     public Answer execute() {
-        if (userService.userExists(userMetadata.userId())) {
+        if (userService.userExists(credentials.userId())) {
             return Answer.alreadyLoggedIn();
         } else {
-            var authState = userMetadata.toAuthState();
+            var authState = credentials.toAuthState();
             var url = spotifyService.getAuthUrl(authState);
             return Answer.authUrl(url);
         }
@@ -31,6 +31,6 @@ public class LoginCommand extends Command {
 
     @Override
     public String toString() {
-        return "LoginCommand{userMetadata=" + userMetadata + "}";
+        return "LoginCommand{credentials=" + credentials + "}";
     }
 }
