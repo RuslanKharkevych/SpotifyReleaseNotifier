@@ -3,6 +3,7 @@ package me.khruslan.spotifyreleasenotifier.release.model;
 public class Release {
     private Long id;
     private String albumId;
+    private long userId;
 
     public Long getId() {
         return id;
@@ -18,5 +19,13 @@ public class Release {
 
     public void setAlbumId(String albumId) {
         this.albumId = albumId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 }

@@ -3,10 +3,12 @@ package me.khruslan.spotifyreleasenotifier.release;
 import me.khruslan.spotifyreleasenotifier.release.builder.ReleaseBuilder;
 import me.khruslan.spotifyreleasenotifier.release.model.Release;
 import me.khruslan.spotifyreleasenotifier.release.model.ReleaseHistory;
-import me.khruslan.spotifyreleasenotifier.telegram.TelegramService;
 import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
+import me.khruslan.spotifyreleasenotifier.telegram.TelegramService;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
 import me.khruslan.spotifyreleasenotifier.user.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,11 +18,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Logging
+// TODO: Improve logging
 @Component
 public class ReleaseNotifier {
     private static final long JOB_RATE_MILLIS = 12L * 60L * 60L * 1000L;
     private static final String SPOTIFY_URL_KEY = "spotify";
+
+    private static final Logger logger = LoggerFactory.getLogger(ReleaseNotifier.class);
 
     private final UserService userService;
     private final SpotifyService spotifyService;
@@ -35,6 +39,8 @@ public class ReleaseNotifier {
 
     @Scheduled(fixedRate = JOB_RATE_MILLIS)
     public void checkForNewReleases() {
+        logger.debug("Checking for new releases");
+
         for (var user : userService.getAllUsers()) {
             if (!authenticate(user)) return;
             var albums = getNewAlbums(user);
@@ -45,8 +51,11 @@ public class ReleaseNotifier {
     }
 
     private boolean authenticate(User user) {
+        logger.debug("Authenticating user: {}", user);
         var credentials = user.getSpotifyCredentials();
-        if (credentials.tokenExpirationTimestamp() < System.currentTimeMillis()) {
+
+        if (credentials.tokenExpirationTimestamp() > System.currentTimeMillis()) {
+            logger.debug("User credentials are up-to-date: {}", credentials);
             return true;
         }
 
@@ -68,27 +77,30 @@ public class ReleaseNotifier {
         newAlbums.removeIf(album -> ignoredAlbumIds.contains(album.getId()));
 
         if (!newAlbums.isEmpty()) {
-            var updatedHistory = updateReleaseHistory(releaseHistory, newAlbums);
+            var updatedHistory = updateReleaseHistory(user.getId(), releaseHistory, newAlbums);
             user.setReleaseHistory(updatedHistory);
         }
 
         return newAlbums;
     }
 
-    private void notifyAboutNewAlbums(Long chatId, List<AlbumSimplified> albums) {
+    private void notifyAboutNewAlbums(long chatId, List<AlbumSimplified> albums) {
         for (var album : albums) {
             var url = album.getExternalUrls().get(SPOTIFY_URL_KEY);
             telegramService.sendMessage(chatId, url);
         }
     }
 
-    private ReleaseHistory updateReleaseHistory(ReleaseHistory history, List<AlbumSimplified> albums) {
-        var releases = new ArrayList<>(albums.stream().map(album -> createRelease(album.getId())).toList());
+    private ReleaseHistory updateReleaseHistory(long userId, ReleaseHistory history, List<AlbumSimplified> albums) {
+        var releases = new ArrayList<>(albums.stream().map(album -> createRelease(userId, album.getId())).toList());
         if (history.date().isEqual(LocalDate.now())) releases.addAll(history.releases());
         return new ReleaseHistory(releases);
     }
 
-    private Release createRelease(String albumId) {
-        return new ReleaseBuilder().setAlbumId(albumId).build();
+    private Release createRelease(long userId, String albumId) {
+        return new ReleaseBuilder()
+                .setAlbumId(albumId)
+                .setUserId(userId)
+                .build();
     }
 }

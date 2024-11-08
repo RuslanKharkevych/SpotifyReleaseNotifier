@@ -39,6 +39,7 @@ public class ReleaseMapper {
         return new ReleaseBuilder()
                 .setId(dto.getId())
                 .setAlbumId(dto.getAlbumId())
+                .setUserId(dto.getUserId())
                 .build();
     }
 
@@ -46,6 +47,7 @@ public class ReleaseMapper {
         return new ReleaseDtoBuilder()
                 .setId(release.getId())
                 .setAlbumId(release.getAlbumId())
+                .setUserId(release.getUserId())
                 .build();
     }
 

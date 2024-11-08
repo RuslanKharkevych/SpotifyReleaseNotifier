@@ -3,12 +3,12 @@ package me.khruslan.spotifyreleasenotifier.user;
 import me.khruslan.spotifyreleasenotifier.user.model.UserDto;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 // TODO: Logging & error handling
-@Repository
+@Component
 public class UserDao {
     private static final String TABLE_USERS = "User";
     private static final String COLUMN_TELEGRAM_ID = "telegramId";

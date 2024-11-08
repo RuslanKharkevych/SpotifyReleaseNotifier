@@ -19,6 +19,11 @@ public class ReleaseDtoBuilder {
         return this;
     }
 
+    public ReleaseDtoBuilder setUserId(long userId) {
+        releaseDto.setUserId(userId);
+        return this;
+    }
+
     public ReleaseDto build() {
         return releaseDto;
     }

@@ -19,6 +19,11 @@ public class ReleaseBuilder {
         return this;
     }
 
+    public ReleaseBuilder setUserId(long userId) {
+        release.setUserId(userId);
+        return this;
+    }
+
     public Release build() {
         return release;
     }

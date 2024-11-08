@@ -12,6 +12,9 @@ public class ReleaseDto {
     @Column(name = "album_id")
     private String albumId;
 
+    @Column(name = "user_id")
+    private long userId;
+
     public Long getId() {
         return id;
     }
@@ -26,5 +29,13 @@ public class ReleaseDto {
 
     public void setAlbumId(String albumId) {
         this.albumId = albumId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 }

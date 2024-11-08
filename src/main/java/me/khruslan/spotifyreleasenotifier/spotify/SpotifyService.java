@@ -1,6 +1,9 @@
 package me.khruslan.spotifyreleasenotifier.spotify;
 
 import me.khruslan.spotifyreleasenotifier.auth.SpotifyCredentials;
+import me.khruslan.spotifyreleasenotifier.spotify.paging.CursorPagingAdapter;
+import me.khruslan.spotifyreleasenotifier.spotify.paging.OffsetPagingAdapter;
+import me.khruslan.spotifyreleasenotifier.spotify.paging.PagingUtil;
 import org.apache.hc.core5.http.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +20,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class SpotifyService {
-    private static final int PAGE_SIZE = 50;
     private static final long DELAY_BETWEEN_REQUESTS_MILLIS = 30_000L;
 
     private static final Logger logger = LoggerFactory.getLogger(SpotifyService.class);
@@ -83,9 +84,8 @@ public class SpotifyService {
         List<AlbumSimplified> albums = new ArrayList<>();
 
         for (var artist : getFollowedArtists()) {
-            waitBeforeNextRequest();
-            var artistAlbums = getAlbums(artist.getId());
-            var newAlbums = Arrays.stream(artistAlbums)
+            var newAlbums = getAlbums(artist.getId())
+                    .stream()
                     .filter(album -> releasedAfter(album, lastCheckedDate))
                     .toList();
             logger.debug("Fetch new albums progress: newAlbums={}, artist={}", newAlbums, artist);
@@ -97,38 +97,36 @@ public class SpotifyService {
         return albums;
     }
 
-    // TODO: Pagination
-    private Artist[] getFollowedArtists() {
+    private List<Artist> getFollowedArtists() {
         logger.debug("Fetching followed artists");
-        var request = spotifyApi.getUsersFollowedArtists(ModelObjectType.ARTIST)
-                .limit(PAGE_SIZE)
-                .build();
-
-        try {
-            var artists = request.execute().getItems();
-            logger.debug("Fetched followed artists: {}", Arrays.toString(artists));
-            return artists;
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            logger.error("Failed to get followed artists", e);
-            return new Artist[]{};
-        }
+        var artists = PagingUtil.getAllItems((String cursor) -> getFollowedArtists(cursor));
+        logger.debug("Fetched followed artists: {}", artists);
+        return artists;
     }
 
-    // TODO: Pagination
-    private AlbumSimplified[] getAlbums(String artistId) {
+    private List<AlbumSimplified> getAlbums(String artistId) {
         logger.debug("Fetching albums: artistId={}", artistId);
-        var request = spotifyApi.getArtistsAlbums(artistId)
-                .limit(PAGE_SIZE)
-                .build();
+        var albums = PagingUtil.getAllItems((Integer offset) -> getAlbums(artistId, offset));
+        logger.debug("Fetched albums: {}", albums);
+        return albums;
+    }
 
-        try {
-            var albums = request.execute().getItems();
-            logger.debug("Fetched albums: {}", Arrays.toString(albums));
-            return albums;
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
-            logger.error("Failed to fetch albums", e);
-            return new AlbumSimplified[]{};
-        }
+    private CursorPagingAdapter<Artist> getFollowedArtists(String after)
+            throws IOException, ParseException, SpotifyWebApiException {
+        waitBeforeNextRequest();
+        var requestBuilder = spotifyApi.getUsersFollowedArtists(ModelObjectType.ARTIST);
+        if (after != null) requestBuilder.after(after);
+        var request = requestBuilder.limit(PagingUtil.PAGE_SIZE).build();
+        return new CursorPagingAdapter<>(request.execute());
+    }
+
+    private OffsetPagingAdapter<AlbumSimplified> getAlbums(String artistId, Integer offset)
+            throws IOException, ParseException, SpotifyWebApiException {
+        waitBeforeNextRequest();
+        var requestBuilder = spotifyApi.getArtistsAlbums(artistId);
+        if (offset != null) requestBuilder.offset(offset);
+        var request = requestBuilder.limit(PagingUtil.PAGE_SIZE).build();
+        return new OffsetPagingAdapter<>(request.execute());
     }
 
     // TODO: Move to ReleaseNotifier
