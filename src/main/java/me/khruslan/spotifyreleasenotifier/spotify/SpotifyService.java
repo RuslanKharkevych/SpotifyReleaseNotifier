@@ -17,8 +17,6 @@ import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,21 +76,16 @@ public class SpotifyService {
         }
     }
 
-    public List<AlbumSimplified> getNewAlbums(String accessToken, LocalDate lastCheckedDate) {
-        logger.debug("Fetching new albums: accessToken={}, lastCheckedDate={}", accessToken, lastCheckedDate);
+    public List<AlbumSimplified> getAlbumsFromFollowedArtists(String accessToken) {
+        logger.debug("Fetching albums from followed artists: accessToken={}}", accessToken);
         spotifyApi.setAccessToken(accessToken);
         List<AlbumSimplified> albums = new ArrayList<>();
 
         for (var artist : getFollowedArtists()) {
-            var newAlbums = getAlbums(artist.getId())
-                    .stream()
-                    .filter(album -> releasedAfter(album, lastCheckedDate))
-                    .toList();
-            logger.debug("Fetch new albums progress: newAlbums={}, artist={}", newAlbums, artist);
-            albums.addAll(newAlbums);
+            albums.addAll(getAlbums(artist.getId()));
         }
 
-        logger.debug("Fetched new albums: {}", albums);
+        logger.debug("Fetched albums from followed artists: {}", albums);
         spotifyApi.setAccessToken(null);
         return albums;
     }
@@ -127,17 +120,6 @@ public class SpotifyService {
         if (offset != null) requestBuilder.offset(offset);
         var request = requestBuilder.limit(PagingUtil.PAGE_SIZE).build();
         return new OffsetPagingAdapter<>(request.execute());
-    }
-
-    // TODO: Move to ReleaseNotifier
-    private boolean releasedAfter(AlbumSimplified album, LocalDate lastCheckedDate) {
-        try {
-            var releaseDate = LocalDate.parse(album.getReleaseDate());
-            return !releaseDate.isBefore(lastCheckedDate);
-        } catch (DateTimeParseException e) {
-            logger.debug("Failed to parse release date: album={}", album);
-            return false;
-        }
     }
 
     private void waitBeforeNextRequest() {

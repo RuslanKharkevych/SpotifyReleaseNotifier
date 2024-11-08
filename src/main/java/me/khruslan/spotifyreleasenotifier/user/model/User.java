@@ -4,7 +4,6 @@ import me.khruslan.spotifyreleasenotifier.auth.SpotifyCredentials;
 import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
 import me.khruslan.spotifyreleasenotifier.release.model.ReleaseHistory;
 
-// TODO: Implement toString
 public class User {
     private Long id;
     private TelegramCredentials telegramCredentials;
@@ -41,5 +40,15 @@ public class User {
 
     public void setReleaseHistory(ReleaseHistory releaseHistory) {
         this.releaseHistory = releaseHistory;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", telegramCredentials=" + telegramCredentials +
+                ", spotifyCredentials=" + spotifyCredentials +
+                ", releaseHistory=" + releaseHistory +
+                "}";
     }
 }

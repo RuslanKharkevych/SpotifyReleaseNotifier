@@ -15,10 +15,9 @@ import org.springframework.stereotype.Component;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
-// TODO: Improve logging
 @Component
 public class ReleaseNotifier {
     private static final long JOB_RATE_MILLIS = 12L * 60L * 60L * 1000L;
@@ -55,46 +54,90 @@ public class ReleaseNotifier {
         var credentials = user.getSpotifyCredentials();
 
         if (credentials.tokenExpirationTimestamp() > System.currentTimeMillis()) {
-            logger.debug("User credentials are up-to-date: {}", credentials);
-            return true;
-        }
-
-        var refreshedCredentials = spotifyService.refreshAccessToken(credentials.refreshToken());
-        if (refreshedCredentials != null) {
-            user.setSpotifyCredentials(refreshedCredentials);
+            logger.debug("Access token is valid: credentials={}", credentials);
             return true;
         } else {
-            return false;
+            return refreshToken(user);
         }
     }
 
     private List<AlbumSimplified> getNewAlbums(User user) {
+        logger.debug("Fetching new albums: user={}", user);
         var accessToken = user.getSpotifyCredentials().accessToken();
-        var releaseHistory = user.getReleaseHistory();
-        var newAlbums = spotifyService.getNewAlbums(accessToken, releaseHistory.date());
-
-        var ignoredAlbumIds = releaseHistory.releases().stream().map(Release::getAlbumId).toList();
-        newAlbums.removeIf(album -> ignoredAlbumIds.contains(album.getId()));
+        var allAlbums = spotifyService.getAlbumsFromFollowedArtists(accessToken);
+        var newAlbums = filterNewAlbums(allAlbums, user.getReleaseHistory());
+        logger.debug("Fetched new albums: {}", newAlbums);
 
         if (!newAlbums.isEmpty()) {
-            var updatedHistory = updateReleaseHistory(user.getId(), releaseHistory, newAlbums);
-            user.setReleaseHistory(updatedHistory);
+            updateReleaseHistory(user, newAlbums);
         }
 
         return newAlbums;
     }
 
     private void notifyAboutNewAlbums(long chatId, List<AlbumSimplified> albums) {
+        logger.debug("Notifying about new albums: chatId={}, albums={}", chatId, albums);
+
         for (var album : albums) {
             var url = album.getExternalUrls().get(SPOTIFY_URL_KEY);
             telegramService.sendMessage(chatId, url);
         }
     }
 
-    private ReleaseHistory updateReleaseHistory(long userId, ReleaseHistory history, List<AlbumSimplified> albums) {
-        var releases = new ArrayList<>(albums.stream().map(album -> createRelease(userId, album.getId())).toList());
-        if (history.date().isEqual(LocalDate.now())) releases.addAll(history.releases());
-        return new ReleaseHistory(releases);
+    private boolean refreshToken(User user) {
+        var credentials = user.getSpotifyCredentials();
+        var refreshedCredentials = spotifyService.refreshAccessToken(credentials.refreshToken());
+
+        if (refreshedCredentials != null) {
+            user.setSpotifyCredentials(refreshedCredentials);
+            logger.debug("Successfully refreshed access token");
+            return true;
+        } else {
+            logger.debug("Failed to refresh access token");
+            return false;
+        }
+    }
+
+    private List<AlbumSimplified> filterNewAlbums(List<AlbumSimplified> albums, ReleaseHistory history) {
+        return albums.stream()
+                .filter(album -> releasedAfter(album, history.date()) && !alreadyNotified(album, history.releases()))
+                .toList();
+    }
+
+    private void updateReleaseHistory(User user, List<AlbumSimplified> albums) {
+        logger.debug("Updating release history: user={}, albums={}", user, albums);
+        var releases = createReleases(user.getId(), albums);
+        var currentHistory = user.getReleaseHistory();
+        if (currentHistory.date().isEqual(LocalDate.now())) {
+            releases.addAll(currentHistory.releases());
+        }
+
+        var updatedHistory = new ReleaseHistory(releases);
+        user.setReleaseHistory(updatedHistory);
+        logger.debug("Updated release history: {}", updatedHistory);
+    }
+
+    private boolean releasedAfter(AlbumSimplified album, LocalDate lastCheckedDate) {
+        try {
+            var releaseDate = LocalDate.parse(album.getReleaseDate());
+            return !releaseDate.isBefore(lastCheckedDate);
+        } catch (DateTimeParseException e) {
+            logger.debug("Failed to parse release date: album={}", album);
+            return false;
+        }
+    }
+
+    private boolean alreadyNotified(AlbumSimplified album, List<Release> releases) {
+        return releases.stream()
+                .map(Release::getAlbumId)
+                .toList()
+                .contains(album.getId());
+    }
+
+    private List<Release> createReleases(long userId, List<AlbumSimplified> albums) {
+        return albums.stream()
+                .map(album -> createRelease(userId, album.getId()))
+                .toList();
     }
 
     private Release createRelease(long userId, String albumId) {

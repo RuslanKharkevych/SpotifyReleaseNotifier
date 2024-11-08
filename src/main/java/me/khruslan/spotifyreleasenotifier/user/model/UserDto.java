@@ -2,6 +2,8 @@ package me.khruslan.spotifyreleasenotifier.user.model;
 
 import jakarta.persistence.*;
 import me.khruslan.spotifyreleasenotifier.release.model.ReleaseDto;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class UserDto {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<ReleaseDto> releases;
 
     public Long getId() {

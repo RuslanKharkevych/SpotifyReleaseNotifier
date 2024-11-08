@@ -28,4 +28,9 @@ public class Release {
     public void setUserId(long userId) {
         this.userId = userId;
     }
+
+    @Override
+    public String toString() {
+        return "Release{id=" + id + ", albumId='" + albumId + "', userId=" + userId + "}";
+    }
 }
