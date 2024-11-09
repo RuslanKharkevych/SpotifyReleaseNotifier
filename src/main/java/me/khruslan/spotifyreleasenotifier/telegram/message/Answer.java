@@ -27,6 +27,10 @@ public class Answer {
         return new Answer("Successfully logged out!");
     }
 
+    public static Answer failedToLogOut() {
+        return new Answer("Failed to logout!");
+    }
+
     public static Answer unrecognizedCommand(String commandName) {
         return new Answer("Couldn't recognize command " + commandName);
     }

@@ -19,11 +19,12 @@ public class LogoutCommand extends Command {
     public Answer execute() {
         var userId = credentials.userId();
 
-        if (userService.userExists(userId)) {
-            userService.deleteUser(userId);
+        if (!userService.userExists(userId)) {
+            return Answer.notLoggedIn();
+        } else if (userService.deleteUser(userId)) {
             return Answer.successfullyLoggedOut();
         } else {
-            return Answer.notLoggedIn();
+            return Answer.failedToLogOut();
         }
     }
 

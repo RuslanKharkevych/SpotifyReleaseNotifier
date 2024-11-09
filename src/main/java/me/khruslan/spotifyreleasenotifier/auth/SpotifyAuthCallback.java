@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+// TODO: Fix hardcoded messages
 @RestController
 public class SpotifyAuthCallback {
     private static final Logger logger = LoggerFactory.getLogger(SpotifyAuthCallback.class);
@@ -38,29 +39,28 @@ public class SpotifyAuthCallback {
         var telegramCredentials = TelegramCredentials.fromAuthState(state);
         logger.debug("Handling Spotify auth redirect: telegramCredentials={}", telegramCredentials);
         var spotifyCredentials = code != null ? spotifyService.getAuthCredentials(code) : null;
+        var chatId = telegramCredentials.chatId();
 
-        if (spotifyCredentials != null) {
-            logger.debug("Successfully authenticated with Spotify");
-            // TODO: Fix hardcoded message
-            telegramService.sendMessage(telegramCredentials.chatId(), "Logged in!");
-            createUser(telegramCredentials, spotifyCredentials);
-        } else {
+        if (spotifyCredentials == null) {
             logger.debug("Failed to authenticate with Spotify: error={}", error);
-            // TODO: Fix hardcoded message
-            telegramService.sendMessage(telegramCredentials.chatId(), "Failed to log in");
+            telegramService.sendMessage(chatId, "Failed to log in");
+        } else if (createUser(telegramCredentials, spotifyCredentials)) {
+            logger.debug("Successfully authenticated with Spotify");
+            telegramService.sendMessage(chatId, "Logged in!");
+        } else {
+            logger.debug("Spotify authentication incomplete due to database error");
+            telegramService.sendMessage(chatId, "Failed to log in");
         }
 
         return new RedirectView(telegramConfig.getAbsoluteUrl());
     }
 
-    private void createUser(TelegramCredentials telegramCredentials, SpotifyCredentials spotifyCredentials) {
+    private boolean createUser(TelegramCredentials telegramCredentials, SpotifyCredentials spotifyCredentials) {
         var user = new UserBuilder()
                 .setTelegramCredentials(telegramCredentials)
                 .setSpotifyCredentials(spotifyCredentials)
                 .build();
 
-        logger.debug("Creating new user: {}", user);
-        // TODO: Error handling
-        userService.createUser(user);
+        return userService.createUser(user);
     }
 }

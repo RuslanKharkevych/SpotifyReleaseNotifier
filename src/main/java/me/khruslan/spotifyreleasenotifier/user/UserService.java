@@ -22,6 +22,7 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
+        logger.debug("Fetching users");
         var usersDto = userDao.getAllUsers();
         var users = userMapper.mapFromDto(usersDto);
         logger.debug("Fetched users: {}", users);
@@ -29,29 +30,50 @@ public class UserService {
     }
 
     public boolean userExists(long telegramId) {
+        logger.debug("Checking if user exists: telegramId={}", telegramId);
+
         if (userDao.userExists(telegramId)) {
-            logger.debug("Found user with telegramId: {}", telegramId);
+            logger.debug("User found");
             return true;
         } else {
-            logger.debug("Couldn't find user with telegramId: {}", telegramId);
+            logger.debug("User not found");
             return false;
         }
     }
 
-    public void createUser(User user) {
+    public boolean createUser(User user) {
+        logger.debug("Creating user: {}", user);
         var userDto = userMapper.mapToDto(user);
-        userDao.createUser(userDto);
-        logger.debug("Created user: {}", user);
+
+        if (userDao.createUser(userDto)) {
+            logger.debug("Successfully created user");
+            return true;
+        } else {
+            logger.debug("Failed to create user");
+            return false;
+        }
     }
 
     public void updateUser(User user) {
+        logger.debug("Updating user: {}", user);
         var userDto = userMapper.mapToDto(user);
-        userDao.updateUser(userDto);
-        logger.debug("Updated user: {}", user);
+
+        if (userDao.updateUser(userDto)) {
+            logger.debug("Successfully updated user");
+        } else {
+            logger.debug("Failed to update user");
+        }
     }
 
-    public void deleteUser(long telegramId) {
-        userDao.deleteUser(telegramId);
-        logger.debug("Deleted user with telegramId: {}", telegramId);
+    public boolean deleteUser(long telegramId) {
+        logger.debug("Deleting user: telegramId={}", telegramId);
+
+        if (userDao.deleteUser(telegramId)) {
+            logger.debug("Successfully deleted user");
+            return true;
+        } else {
+            logger.debug("Failed to delete user");
+            return false;
+        }
     }
 }
