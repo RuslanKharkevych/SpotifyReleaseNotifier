@@ -1,6 +1,6 @@
 package me.khruslan.spotifyreleasenotifier.telegram.command;
 
-import me.khruslan.spotifyreleasenotifier.telegram.message.Answer;
+import me.khruslan.spotifyreleasenotifier.telegram.message.Messages;
 
 public class UnknownCommand extends Command {
     private final String name;
@@ -10,8 +10,8 @@ public class UnknownCommand extends Command {
     }
 
     @Override
-    public Answer execute() {
-        return Answer.unrecognizedCommand(name);
+    public String execute() {
+        return String.format(Messages.UNRECOGNIZED_COMMAND, name);
     }
 
     @Override

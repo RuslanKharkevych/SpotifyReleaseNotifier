@@ -1,6 +1,6 @@
 package me.khruslan.spotifyreleasenotifier.telegram.command;
 
-import me.khruslan.spotifyreleasenotifier.telegram.message.Answer;
+import me.khruslan.spotifyreleasenotifier.telegram.message.Messages;
 import me.khruslan.spotifyreleasenotifier.user.UserService;
 import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
 
@@ -16,15 +16,15 @@ public class LogoutCommand extends Command {
     }
 
     @Override
-    public Answer execute() {
+    public String execute() {
         var userId = credentials.userId();
 
         if (!userService.userExists(userId)) {
-            return Answer.notLoggedIn();
+            return Messages.LOGOUT_BAD_STATE;
         } else if (userService.deleteUser(userId)) {
-            return Answer.successfullyLoggedOut();
+            return Messages.LOGOUT_SUCCESS;
         } else {
-            return Answer.failedToLogOut();
+            return Messages.INTERNAL_ERROR;
         }
     }
 

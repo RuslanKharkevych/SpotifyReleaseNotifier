@@ -42,6 +42,6 @@ public class MessageHandler implements LongPollingSingleThreadUpdateConsumer {
 
         var answer = command.execute();
         logger.debug("Command completed with answer: {}", answer);
-        telegramService.sendMessage(message.getChatId(), answer.getMessage());
+        telegramService.sendMessage(message.getChatId(), answer);
     }
 }

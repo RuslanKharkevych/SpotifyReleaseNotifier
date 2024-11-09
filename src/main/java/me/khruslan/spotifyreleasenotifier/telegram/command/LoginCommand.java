@@ -1,9 +1,9 @@
 package me.khruslan.spotifyreleasenotifier.telegram.command;
 
-import me.khruslan.spotifyreleasenotifier.telegram.message.Answer;
-import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
-import me.khruslan.spotifyreleasenotifier.user.UserService;
 import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
+import me.khruslan.spotifyreleasenotifier.spotify.SpotifyService;
+import me.khruslan.spotifyreleasenotifier.telegram.message.Messages;
+import me.khruslan.spotifyreleasenotifier.user.UserService;
 
 public class LoginCommand extends Command {
     public static final String NAME = "/login";
@@ -19,13 +19,13 @@ public class LoginCommand extends Command {
     }
 
     @Override
-    public Answer execute() {
+    public String execute() {
         if (userService.userExists(credentials.userId())) {
-            return Answer.alreadyLoggedIn();
+            return Messages.LOGIN_BAD_STATE;
         } else {
             var authState = credentials.toAuthState();
             var url = spotifyService.getAuthUrl(authState);
-            return Answer.authUrl(url);
+            return String.format(Messages.LOGIN_URL, url);
         }
     }
 
