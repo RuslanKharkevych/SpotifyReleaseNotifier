@@ -1,5 +1,7 @@
 package me.khruslan.spotifyreleasenotifier.release.model;
 
+import java.util.Objects;
+
 public class Release {
     private Long id;
     private String albumId;
@@ -27,6 +29,18 @@ public class Release {
 
     public void setUserId(long userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Release release)) return false;
+        return userId == release.userId && Objects.equals(id, release.id) && Objects.equals(albumId, release.albumId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, albumId, userId);
     }
 
     @Override

@@ -15,8 +15,8 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 public class MessageHandler implements LongPollingSingleThreadUpdateConsumer {
     private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
-    private final CommandFactory commandFactory;
     private final TelegramService telegramService;
+    private final CommandFactory commandFactory;
 
     @Autowired
     public MessageHandler(TelegramService telegramService, CommandFactory commandFactory) {

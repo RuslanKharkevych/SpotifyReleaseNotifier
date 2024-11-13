@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.db;
+package me.khruslan.spotifyreleasenotifier.core.db;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

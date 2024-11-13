@@ -1,6 +1,6 @@
 package me.khruslan.spotifyreleasenotifier.user;
 
-import me.khruslan.spotifyreleasenotifier.db.Dao;
+import me.khruslan.spotifyreleasenotifier.core.db.Dao;
 import me.khruslan.spotifyreleasenotifier.user.model.UserDto;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

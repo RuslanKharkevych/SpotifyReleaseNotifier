@@ -12,14 +12,17 @@ import me.khruslan.spotifyreleasenotifier.user.model.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.util.List;
 
 @Component
 public class UserMapper {
+    private final Clock clock;
     private final ReleaseMapper releaseMapper;
 
     @Autowired
-    public UserMapper(ReleaseMapper releaseMapper) {
+    public UserMapper(Clock clock, ReleaseMapper releaseMapper) {
+        this.clock = clock;
         this.releaseMapper = releaseMapper;
     }
 
@@ -49,7 +52,7 @@ public class UserMapper {
         var spotifyCredentials = mapSpotifyCredentials(dto);
         var releaseHistory = mapReleaseHistory(dto);
 
-        return new UserBuilder()
+        return new UserBuilder(clock)
                 .setId(dto.getId())
                 .setTelegramCredentials(telegramCredentials)
                 .setSpotifyCredentials(spotifyCredentials)

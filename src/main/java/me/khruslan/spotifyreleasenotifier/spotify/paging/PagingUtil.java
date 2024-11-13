@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PagingUtil {
-    public static final int PAGE_SIZE = 50;
-
     private static final Logger logger = LoggerFactory.getLogger(PagingUtil.class);
 
     public static <T, U> List<T> getAllItems(PageLoader<T, U> pageLoader) {

@@ -4,11 +4,13 @@ import me.khruslan.spotifyreleasenotifier.auth.SpotifyCredentials;
 import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
 import me.khruslan.spotifyreleasenotifier.release.model.ReleaseHistory;
 
+import java.util.Objects;
+
 public class User {
     private Long id;
     private TelegramCredentials telegramCredentials;
     private SpotifyCredentials spotifyCredentials;
-    private ReleaseHistory releaseHistory = new ReleaseHistory();
+    private ReleaseHistory releaseHistory;
 
     public Long getId() {
         return id;
@@ -40,6 +42,22 @@ public class User {
 
     public void setReleaseHistory(ReleaseHistory releaseHistory) {
         this.releaseHistory = releaseHistory;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof User user)) return false;
+
+        return Objects.equals(id, user.id) &&
+                Objects.equals(telegramCredentials, user.telegramCredentials) &&
+                Objects.equals(spotifyCredentials, user.spotifyCredentials) &&
+                Objects.equals(releaseHistory, user.releaseHistory);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, telegramCredentials, spotifyCredentials, releaseHistory);
     }
 
     @Override

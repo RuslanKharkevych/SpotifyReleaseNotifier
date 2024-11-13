@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
+import java.util.Objects;
 
 @Entity(name = "User")
 @Table(name = "Users")
@@ -99,5 +100,40 @@ public class UserDto {
 
     public void setReleases(List<ReleaseDto> releases) {
         this.releases = releases;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserDto userDto)) return false;
+
+        return telegramId == userDto.telegramId &&
+                telegramChatId == userDto.telegramChatId &&
+                spotifyTokenExpirationTimestamp == userDto.spotifyTokenExpirationTimestamp &&
+                Objects.equals(id, userDto.id) &&
+                Objects.equals(spotifyAccessToken, userDto.spotifyAccessToken) &&
+                Objects.equals(spotifyRefreshToken, userDto.spotifyRefreshToken) &&
+                Objects.equals(releaseHistoryDate, userDto.releaseHistoryDate) &&
+                Objects.equals(releases, userDto.releases);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, telegramId, telegramChatId, spotifyAccessToken, spotifyRefreshToken,
+                spotifyTokenExpirationTimestamp, releaseHistoryDate, releases);
+    }
+
+    @Override
+    public String toString() {
+        return "UserDto{" +
+                "id=" + id +
+                ", telegramId=" + telegramId +
+                ", telegramChatId=" + telegramChatId +
+                ", spotifyAccessToken='" + spotifyAccessToken + "'" +
+                ", spotifyRefreshToken='" + spotifyRefreshToken + "'" +
+                ", spotifyTokenExpirationTimestamp=" + spotifyTokenExpirationTimestamp +
+                ", releaseHistoryDate='" + releaseHistoryDate + "'" +
+                ", releases=" + releases +
+                "}";
     }
 }

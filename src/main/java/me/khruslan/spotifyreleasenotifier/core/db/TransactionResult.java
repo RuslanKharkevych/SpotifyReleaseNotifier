@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.db;
+package me.khruslan.spotifyreleasenotifier.core.db;
 
 public interface TransactionResult<T> {
     boolean isSuccess();

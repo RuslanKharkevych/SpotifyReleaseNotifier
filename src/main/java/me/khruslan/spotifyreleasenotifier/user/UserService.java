@@ -54,14 +54,16 @@ public class UserService {
         }
     }
 
-    public void updateUser(User user) {
+    public boolean updateUser(User user) {
         logger.debug("Updating user: {}", user);
         var userDto = userMapper.mapToDto(user);
 
         if (userDao.updateUser(userDto)) {
             logger.debug("Successfully updated user");
+            return true;
         } else {
             logger.debug("Failed to update user");
+            return false;
         }
     }
 

@@ -5,10 +5,15 @@ import me.khruslan.spotifyreleasenotifier.user.model.User;
 import me.khruslan.spotifyreleasenotifier.auth.SpotifyCredentials;
 import me.khruslan.spotifyreleasenotifier.auth.TelegramCredentials;
 
+import java.time.Clock;
+import java.time.LocalDate;
+
 public class UserBuilder {
+    private final Clock clock;
     private final User user;
 
-    public UserBuilder() {
+    public UserBuilder(Clock clock) {
+        this.clock = clock;
         user = new User();
     }
 
@@ -33,6 +38,10 @@ public class UserBuilder {
     }
 
     public User build() {
+        if (user.getReleaseHistory() == null) {
+            user.setReleaseHistory(new ReleaseHistory(LocalDate.now(clock)));
+        }
+
         return user;
     }
 }

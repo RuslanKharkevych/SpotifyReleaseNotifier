@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -14,6 +15,12 @@ import java.util.List;
 @Component
 public class ReleaseMapper {
     private static final Logger logger = LoggerFactory.getLogger(ReleaseMapper.class);
+
+    private final Clock clock;
+
+    public ReleaseMapper(Clock clock) {
+        this.clock = clock;
+    }
 
     public ReleaseHistoryDto mapToDto(ReleaseHistory history) {
         var date = history.date().toString();
@@ -56,7 +63,7 @@ public class ReleaseMapper {
             return LocalDate.parse(dateString);
         } catch (DateTimeParseException e) {
             logger.error("Failed to parse release history date", e);
-            return LocalDate.now();
+            return LocalDate.now(clock);
         }
     }
 }

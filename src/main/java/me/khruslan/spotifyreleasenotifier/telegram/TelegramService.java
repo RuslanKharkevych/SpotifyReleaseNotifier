@@ -26,8 +26,8 @@ public class TelegramService {
                 .build();
 
         try {
-            telegramClient.execute(sendMessage);
-            logger.debug("Message sent: {}", sendMessage);
+            var messageObj = telegramClient.execute(sendMessage);
+            logger.debug("Message sent: {}", messageObj);
         } catch (TelegramApiException e) {
             logger.error("Failed to send message", e);
         }

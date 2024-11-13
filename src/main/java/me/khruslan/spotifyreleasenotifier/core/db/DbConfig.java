@@ -1,4 +1,4 @@
-package me.khruslan.spotifyreleasenotifier.db;
+package me.khruslan.spotifyreleasenotifier.core.db;
 
 import me.khruslan.spotifyreleasenotifier.release.model.ReleaseDto;
 import me.khruslan.spotifyreleasenotifier.user.model.UserDto;

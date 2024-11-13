@@ -14,9 +14,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ReleaseNotifier {
@@ -25,12 +27,15 @@ public class ReleaseNotifier {
 
     private static final Logger logger = LoggerFactory.getLogger(ReleaseNotifier.class);
 
+    private final Clock clock;
     private final UserService userService;
     private final SpotifyService spotifyService;
     private final TelegramService telegramService;
 
     @Autowired
-    public ReleaseNotifier(UserService userService, SpotifyService spotifyService, TelegramService telegramService) {
+    public ReleaseNotifier(Clock clock, UserService userService, SpotifyService spotifyService,
+                           TelegramService telegramService) {
+        this.clock = clock;
         this.userService = userService;
         this.spotifyService = spotifyService;
         this.telegramService = telegramService;
@@ -53,7 +58,7 @@ public class ReleaseNotifier {
         logger.debug("Authenticating user: {}", user);
         var credentials = user.getSpotifyCredentials();
 
-        if (credentials.tokenExpirationTimestamp() > System.currentTimeMillis()) {
+        if (credentials.tokenExpirationTimestamp() > clock.millis()) {
             logger.debug("Access token is valid: credentials={}", credentials);
             return true;
         } else {
@@ -108,11 +113,13 @@ public class ReleaseNotifier {
         logger.debug("Updating release history: user={}, albums={}", user, albums);
         var releases = createReleases(user.getId(), albums);
         var currentHistory = user.getReleaseHistory();
-        if (currentHistory.date().isEqual(LocalDate.now())) {
+        var dateToday = LocalDate.now(clock);
+
+        if (currentHistory.date().isEqual(dateToday)) {
             releases.addAll(currentHistory.releases());
         }
 
-        var updatedHistory = new ReleaseHistory(releases);
+        var updatedHistory = new ReleaseHistory(dateToday, releases);
         user.setReleaseHistory(updatedHistory);
         logger.debug("Updated release history: {}", updatedHistory);
     }
@@ -137,7 +144,7 @@ public class ReleaseNotifier {
     private List<Release> createReleases(long userId, List<AlbumSimplified> albums) {
         return albums.stream()
                 .map(album -> createRelease(userId, album.getId()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Release createRelease(long userId, String albumId) {

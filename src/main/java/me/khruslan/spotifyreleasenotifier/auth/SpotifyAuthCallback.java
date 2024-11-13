@@ -14,18 +14,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.time.Clock;
+
 @RestController
 public class SpotifyAuthCallback {
     private static final Logger logger = LoggerFactory.getLogger(SpotifyAuthCallback.class);
 
+    private final Clock clock;
     private final TelegramConfig telegramConfig;
     private final TelegramService telegramService;
     private final SpotifyService spotifyService;
     private final UserService userService;
 
     @Autowired
-    public SpotifyAuthCallback(TelegramConfig telegramConfig, TelegramService telegramService,
+    public SpotifyAuthCallback(Clock clock, TelegramConfig telegramConfig, TelegramService telegramService,
                                SpotifyService spotifyService, UserService userService) {
+        this.clock = clock;
         this.telegramConfig = telegramConfig;
         this.spotifyService = spotifyService;
         this.telegramService = telegramService;
@@ -56,7 +60,7 @@ public class SpotifyAuthCallback {
     }
 
     private boolean createUser(TelegramCredentials telegramCredentials, SpotifyCredentials spotifyCredentials) {
-        var user = new UserBuilder()
+        var user = new UserBuilder(clock)
                 .setTelegramCredentials(telegramCredentials)
                 .setSpotifyCredentials(spotifyCredentials)
                 .build();
