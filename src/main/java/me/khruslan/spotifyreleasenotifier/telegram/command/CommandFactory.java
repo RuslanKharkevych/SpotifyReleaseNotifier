@@ -22,6 +22,8 @@ public class CommandFactory {
             case (StartCommand.NAME) -> new StartCommand();
             case (LoginCommand.NAME) -> new LoginCommand(userService, spotifyService, credentials);
             case (LogoutCommand.NAME) -> new LogoutCommand(userService, credentials);
+            case (StatusCommand.NAME) -> new StatusCommand(userService, credentials);
+            case (HelpCommand.NAME) -> new HelpCommand();
             default -> new UnknownCommand(name);
         };
     }

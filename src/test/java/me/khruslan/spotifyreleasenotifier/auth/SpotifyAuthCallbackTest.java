@@ -67,11 +67,11 @@ public class SpotifyAuthCallbackTest extends EasyMockSupport {
     }
 
     @Test
-    public void givenAuthCodeValid_andUserSaveable_whenHandleRedirect_thenSendLoginSuccessMessage() {
+    public void givenAuthCodeValid_andUserSaveable_whenHandleRedirect_thenSendStatusLoggedInMessage() {
         expect(telegramConfig.getAbsoluteUrl()).andReturn(TELEGRAM_BOT_URL);
         expect(spotifyService.getAuthCredentials(AUTH_CODE)).andReturn(SPOTIFY_CREDENTIALS);
         expect(userService.createUser(mockNewUser())).andReturn(true);
-        expectRunnable(() -> telegramService.sendMessage(TELEGRAM_CHAT_ID, Messages.LOGIN_SUCCESS));
+        expectRunnable(() -> telegramService.sendMessage(TELEGRAM_CHAT_ID, Messages.STATUS_LOGGED_IN));
         replayAll();
 
         var redirectView = spotifyAuthCallback.handleRedirect(AUTH_STATE, AUTH_CODE, null);

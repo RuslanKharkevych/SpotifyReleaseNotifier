@@ -42,6 +42,18 @@ public class CommandFactoryTest extends EasyMockSupport {
     }
 
     @Test
+    public void givenStatusCommandName_whenCreate_createStatusCommand() {
+        var command = commandFactory.create(StatusCommand.NAME, TELEGRAM_CREDENTIALS);
+        assertThat(command).isInstanceOf(StatusCommand.class);
+    }
+
+    @Test
+    public void givenHelpCommandName_whenCreate_createHelpCommand() {
+        var command = commandFactory.create(HelpCommand.NAME, TELEGRAM_CREDENTIALS);
+        assertThat(command).isInstanceOf(HelpCommand.class);
+    }
+
+    @Test
     public void givenUnknownCommandName_whenCreate_createUnknownCommand() {
         var command = commandFactory.create(UNKNOWN_COMMAND_NAME, TELEGRAM_CREDENTIALS);
         assertThat(command).isInstanceOf(UnknownCommand.class);

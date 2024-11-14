@@ -50,7 +50,7 @@ public class SpotifyAuthCallback {
             telegramService.sendMessage(chatId, Messages.LOGIN_ERROR);
         } else if (createUser(telegramCredentials, spotifyCredentials)) {
             logger.debug("Successfully authenticated with Spotify");
-            telegramService.sendMessage(chatId, Messages.LOGIN_SUCCESS);
+            telegramService.sendMessage(chatId, Messages.STATUS_LOGGED_IN);
         } else {
             logger.debug("Couldn't complete Spotify authentication due to internal error");
             telegramService.sendMessage(chatId, Messages.INTERNAL_ERROR);
