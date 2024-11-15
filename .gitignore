@@ -36,5 +36,7 @@ src/main/resources/hibernate.properties
 src/main/resources/telegrambot.properties
 src/main/resources/spotifyapp.properties
 
-### Logs ###
+### Outputs ###
 logs
+bin/spotify-release-notifier.jar
+bin/launcher.sh
