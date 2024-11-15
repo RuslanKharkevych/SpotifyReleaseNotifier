@@ -38,5 +38,4 @@ src/main/resources/spotifyapp.properties
 
 ### Outputs ###
 logs
-bin/spotify-release-notifier.jar
-bin/launcher.sh
+bin
