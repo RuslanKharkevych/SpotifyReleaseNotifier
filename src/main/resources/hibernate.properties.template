@@ -1,7 +1,7 @@
 hibernate.connection.url=
 hibernate.connection.username=
 hibernate.connection.password=
-hibernate.driver=com.mysql.jdbc.Driver
+hibernate.driver=com.mysql.cj.jdbc.Driver
 hibernate.show_sql=true
 hibernate.hbm2ddl.auto=update
 hibernate.current_session_context_class=thread

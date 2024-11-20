@@ -15,8 +15,9 @@ import se.michaelthelin.spotify.model_objects.specification.Artist;
 
 import java.io.IOException;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Service
 public class SpotifyService {
@@ -57,7 +58,7 @@ public class SpotifyService {
 
         try {
             var authCredentials = spotifyApi.refreshAccessToken(refreshToken);
-            var credentials = SpotifyCredentials.create(authCredentials, clock);
+            var credentials = SpotifyCredentials.create(authCredentials, clock).copyWith(refreshToken);
             logger.debug("Successfully refreshed access token: credentials={}", credentials);
             return credentials;
         } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -66,36 +67,36 @@ public class SpotifyService {
         }
     }
 
-    public List<AlbumSimplified> getAlbumsFromFollowedArtists(String accessToken) {
-        logger.debug("Fetching albums from followed artists: accessToken={}}", accessToken);
-        List<AlbumSimplified> albums = new ArrayList<>();
-
-        for (var artist : getFollowedArtists(accessToken)) {
-            var artistAlbums = getAlbums(accessToken, artist.getId());
-            albums.addAll(artistAlbums);
-        }
-
-        logger.debug("Fetched albums from followed artists: {}", albums);
-        return albums;
+    public void getAlbumsFromFollowedArtists(Supplier<String> accessToken,
+                                             Consumer<List<AlbumSimplified>> onPageLoaded) {
+        logger.debug("Fetching albums from followed artists");
+        getFollowedArtists(accessToken, (artists) -> {
+            for (var artist : artists) {
+                getAlbums(accessToken, artist.getId(), onPageLoaded);
+            }
+        });
     }
 
-    private List<Artist> getFollowedArtists(String accessToken) {
+    private void getFollowedArtists(Supplier<String> accessToken, Consumer<List<Artist>> onPageLoaded) {
         logger.debug("Fetching followed artists");
         var artists = PagingUtil.getAllItems((String cursor) -> {
-            var page = spotifyApi.getFollowedArtists(accessToken, cursor);
-            return new CursorPagingAdapter<>(page);
+            var page = spotifyApi.getFollowedArtists(accessToken.get(), cursor);
+            var adapter = new CursorPagingAdapter<>(page);
+            onPageLoaded.accept(adapter.getItems());
+            return adapter;
         });
         logger.debug("Fetched followed artists: {}", artists);
-        return artists;
     }
 
-    private List<AlbumSimplified> getAlbums(String accessToken, String artistId) {
+    private void getAlbums(Supplier<String> accessToken, String artistId,
+                           Consumer<List<AlbumSimplified>> onPageLoaded) {
         logger.debug("Fetching albums: artistId={}", artistId);
         var albums = PagingUtil.getAllItems((Integer offset) -> {
-            var page = spotifyApi.getAlbums(accessToken, artistId, offset);
-            return new OffsetPagingAdapter<>(page);
+            var page = spotifyApi.getAlbums(accessToken.get(), artistId, offset);
+            var adapter = new OffsetPagingAdapter<>(page);
+            onPageLoaded.accept(adapter.getItems());
+            return adapter;
         });
         logger.debug("Fetched albums: {}", albums);
-        return albums;
     }
 }

@@ -8,9 +8,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import static me.khruslan.spotifyreleasenotifier.fixture.CoreFixtures.CLOCK;
 import static me.khruslan.spotifyreleasenotifier.fixture.SpotifyFixtures.*;
@@ -88,7 +91,7 @@ public class SpotifyServiceTest extends EasyMockSupport {
         expect(spotifyApi.getAlbums(ACCESS_TOKEN, ARTIST2_ID, null)).andReturn(ARTIST2_ALBUMS_PAGE1);
         replayAll();
 
-        assertThat(spotifyService.getAlbumsFromFollowedArtists(ACCESS_TOKEN)).isEqualTo(ALBUMS);
+        assertThat(getAlbumsFromFollowedArtists()).isEqualTo(ALBUMS);
         verifyAll();
     }
 
@@ -101,7 +104,7 @@ public class SpotifyServiceTest extends EasyMockSupport {
         expect(spotifyApi.getAlbums(ACCESS_TOKEN, ARTIST2_ID, null)).andThrow(new SpotifyWebApiException());
         replayAll();
 
-        assertThat(spotifyService.getAlbumsFromFollowedArtists(ACCESS_TOKEN)).isEmpty();
+        assertThat(getAlbumsFromFollowedArtists()).isEmpty();
         verifyAll();
     }
 
@@ -111,7 +114,13 @@ public class SpotifyServiceTest extends EasyMockSupport {
         expect(spotifyApi.getFollowedArtists(ACCESS_TOKEN, null)).andThrow(new SpotifyWebApiException());
         replayAll();
 
-        assertThat(spotifyService.getAlbumsFromFollowedArtists(ACCESS_TOKEN)).isEmpty();
+        assertThat(getAlbumsFromFollowedArtists()).isEmpty();
         verifyAll();
+    }
+
+    private List<AlbumSimplified> getAlbumsFromFollowedArtists() {
+        List<AlbumSimplified> albums = new ArrayList<>();
+        spotifyService.getAlbumsFromFollowedArtists(() -> ACCESS_TOKEN, albums::addAll);
+        return albums;
     }
 }

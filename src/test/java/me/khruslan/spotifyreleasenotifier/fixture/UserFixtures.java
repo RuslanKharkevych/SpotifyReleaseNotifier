@@ -51,6 +51,12 @@ public class UserFixtures {
         return user;
     }
 
+    public static User mockUserWithTransitionalReleaseHistory() {
+        var user = mockUser();
+        user.setReleaseHistory(TRANSITIONAL_RELEASE_HISTORY);
+        return user;
+    }
+
     public static User mockUserWithNewReleaseHistory() {
         var user = mockUser();
         user.setReleaseHistory(NEW_RELEASE_HISTORY);

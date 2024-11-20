@@ -17,12 +17,17 @@ import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
 public class ReleaseNotifier {
     private static final long JOB_RATE_MILLIS = 12L * 60L * 60L * 1000L;
+    private static final long TOKEN_VALIDITY_SPARE_TIME_MILLIS = 60L * 1000L;
     private static final String SPOTIFY_URL_KEY = "spotify";
 
     private static final Logger logger = LoggerFactory.getLogger(ReleaseNotifier.class);
@@ -46,46 +51,34 @@ public class ReleaseNotifier {
         logger.debug("Checking for new releases");
 
         for (var user : userService.getAllUsers()) {
-            if (!authenticate(user)) return;
-            var albums = getNewAlbums(user);
-            var chatId = user.getTelegramCredentials().chatId();
-            notifyAboutNewAlbums(chatId, albums);
-            userService.updateUser(user);
+            getNewAlbums(user);
         }
     }
 
-    private boolean authenticate(User user) {
+    private void getNewAlbums(User user) {
+        logger.debug("Fetching new albums: user={}", user);
+        var releases = user.getReleaseHistory().releases();
+        var accessToken = supplyAccessToken(user);
+        var onPageLoaded = consumeLoadedPage(user);
+        spotifyService.getAlbumsFromFollowedArtists(accessToken, onPageLoaded);
+        dumpOldReleases(user, releases);
+    }
+
+    private Supplier<String> supplyAccessToken(User user) {
+        return () -> {
+            authenticate(user);
+            return user.getSpotifyCredentials().accessToken();
+        };
+    }
+
+    private void authenticate(User user) {
         logger.debug("Authenticating user: {}", user);
         var credentials = user.getSpotifyCredentials();
 
-        if (credentials.tokenExpirationTimestamp() > clock.millis()) {
+        if (credentials.tokenExpirationTimestamp() > clock.millis() + TOKEN_VALIDITY_SPARE_TIME_MILLIS) {
             logger.debug("Access token is valid: credentials={}", credentials);
-            return true;
-        } else {
-            return refreshToken(user);
-        }
-    }
-
-    private List<AlbumSimplified> getNewAlbums(User user) {
-        logger.debug("Fetching new albums: user={}", user);
-        var accessToken = user.getSpotifyCredentials().accessToken();
-        var allAlbums = spotifyService.getAlbumsFromFollowedArtists(accessToken);
-        var newAlbums = filterNewAlbums(allAlbums, user.getReleaseHistory());
-        logger.debug("Fetched new albums: {}", newAlbums);
-
-        if (!newAlbums.isEmpty()) {
-            updateReleaseHistory(user, newAlbums);
-        }
-
-        return newAlbums;
-    }
-
-    private void notifyAboutNewAlbums(long chatId, List<AlbumSimplified> albums) {
-        logger.debug("Notifying about new albums: chatId={}, albums={}", chatId, albums);
-
-        for (var album : albums) {
-            var url = album.getExternalUrls().get(SPOTIFY_URL_KEY);
-            telegramService.sendMessage(chatId, url);
+        } else if (refreshToken(user)) {
+            userService.updateUser(user);
         }
     }
 
@@ -103,25 +96,23 @@ public class ReleaseNotifier {
         }
     }
 
+    private Consumer<List<AlbumSimplified>> consumeLoadedPage(User user) {
+        return (albums) -> {
+            var newAlbums = filterNewAlbums(albums, user.getReleaseHistory());
+
+            if (!newAlbums.isEmpty()) {
+                logger.debug("Fetched new albums: {}", newAlbums);
+                var chatId = user.getTelegramCredentials().chatId();
+                notifyAboutNewAlbums(chatId, newAlbums);
+                appendNewReleases(user, newAlbums);
+            }
+        };
+    }
+
     private List<AlbumSimplified> filterNewAlbums(List<AlbumSimplified> albums, ReleaseHistory history) {
         return albums.stream()
                 .filter(album -> releasedAfter(album, history.date()) && !alreadyNotified(album, history.releases()))
                 .toList();
-    }
-
-    private void updateReleaseHistory(User user, List<AlbumSimplified> albums) {
-        logger.debug("Updating release history: user={}, albums={}", user, albums);
-        var releases = createReleases(user.getId(), albums);
-        var currentHistory = user.getReleaseHistory();
-        var dateToday = LocalDate.now(clock);
-
-        if (currentHistory.date().isEqual(dateToday)) {
-            releases.addAll(currentHistory.releases());
-        }
-
-        var updatedHistory = new ReleaseHistory(dateToday, releases);
-        user.setReleaseHistory(updatedHistory);
-        logger.debug("Updated release history: {}", updatedHistory);
     }
 
     private boolean releasedAfter(AlbumSimplified album, LocalDate lastCheckedDate) {
@@ -139,6 +130,45 @@ public class ReleaseNotifier {
                 .map(Release::getAlbumId)
                 .toList()
                 .contains(album.getId());
+    }
+
+    private void notifyAboutNewAlbums(long chatId, List<AlbumSimplified> albums) {
+        logger.debug("Notifying about new albums: chatId={}, albums={}", chatId, albums);
+
+        for (var album : albums) {
+            var url = album.getExternalUrls().get(SPOTIFY_URL_KEY);
+            telegramService.sendMessage(chatId, url);
+        }
+    }
+
+    private void appendNewReleases(User user, List<AlbumSimplified> albums) {
+        var releases = createReleases(user.getId(), albums);
+        updateReleaseHistory(user, (history -> {
+            releases.addAll(history.releases());
+            return history.copyWith(releases);
+        }));
+    }
+
+    private void dumpOldReleases(User user, List<Release> oldReleases) {
+        updateReleaseHistory(user, (history -> {
+            var dateToday = LocalDate.now(clock);
+            var releases = new ArrayList<>(history.releases());
+
+            if (history.date().isBefore(dateToday)) {
+                releases.removeAll(oldReleases);
+            }
+
+            return new ReleaseHistory(dateToday, releases);
+        }));
+    }
+
+    private void updateReleaseHistory(User user, Function<ReleaseHistory, ReleaseHistory> transformation) {
+        logger.debug("Updating release history: user={}", user);
+        var currentHistory = user.getReleaseHistory();
+        var updatedHistory = transformation.apply(currentHistory);
+        user.setReleaseHistory(updatedHistory);
+        userService.updateUser(user);
+        logger.debug("Updated release history: {}", updatedHistory);
     }
 
     private List<Release> createReleases(long userId, List<AlbumSimplified> albums) {

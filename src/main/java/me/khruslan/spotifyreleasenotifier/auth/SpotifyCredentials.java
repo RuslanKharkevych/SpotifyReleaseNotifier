@@ -12,4 +12,8 @@ public record SpotifyCredentials(String accessToken, String refreshToken, long t
         var tokenExpirationTimestamp = clock.millis() + TimeUnit.SECONDS.toMillis(authCredentials.getExpiresIn());
         return new SpotifyCredentials(accessToken, refreshToken, tokenExpirationTimestamp);
     }
+
+    public SpotifyCredentials copyWith(String refreshToken) {
+        return new SpotifyCredentials(accessToken, refreshToken, tokenExpirationTimestamp);
+    }
 }

@@ -8,4 +8,8 @@ public record ReleaseHistory(LocalDate date, List<Release> releases) {
     public ReleaseHistory(LocalDate date) {
         this(date, new ArrayList<>());
     }
+
+    public ReleaseHistory copyWith(List<Release> releases) {
+        return new ReleaseHistory(date, releases);
+    }
 }

@@ -44,6 +44,9 @@ public class ReleaseFixtures {
     public static final ReleaseHistory NEW_RELEASE_HISTORY =
             new ReleaseHistory(LocalDate.now(CLOCK), List.of(NEW_RELEASE));
 
+    public static final ReleaseHistory TRANSITIONAL_RELEASE_HISTORY =
+            new ReleaseHistory(RELEASE_HISTORY_DATE, List.of(NEW_RELEASE, RELEASE));
+
     public static final ReleaseHistoryDto RELEASE_HISTORY_DTO_WITH_INVALID_DATE =
             new ReleaseHistoryDto("", List.of(RELEASE_DTO));
 
