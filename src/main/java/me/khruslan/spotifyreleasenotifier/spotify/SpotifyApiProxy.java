@@ -21,6 +21,7 @@ import java.net.URI;
 
 @Component
 public class SpotifyApiProxy {
+    private static final String ALBUM_TYPES = "album,single,compilation";
     private static final int PAGE_SIZE = 50;
     private static final long DELAY_BETWEEN_REQUESTS_MILLIS = 30_000L;
 
@@ -85,7 +86,7 @@ public class SpotifyApiProxy {
         waitBeforeNextRequest();
         spotifyApi.setAccessToken(accessToken);
 
-        var requestBuilder = spotifyApi.getArtistsAlbums(artistId);
+        var requestBuilder = spotifyApi.getArtistsAlbums(artistId).album_type(ALBUM_TYPES);
         if (offset != null) requestBuilder.offset(offset);
         var request = requestBuilder.limit(PAGE_SIZE).build();
         logRequest(request);
