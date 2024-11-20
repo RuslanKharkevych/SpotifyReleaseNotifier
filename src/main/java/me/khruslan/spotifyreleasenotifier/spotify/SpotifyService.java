@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -94,9 +96,19 @@ public class SpotifyService {
         var albums = PagingUtil.getAllItems((Integer offset) -> {
             var page = spotifyApi.getAlbums(accessToken.get(), artistId, offset);
             var adapter = new OffsetPagingAdapter<>(page);
-            onPageLoaded.accept(adapter.getItems());
+            onPageLoaded.accept(filterAlbumsByArtistId(adapter.getItems(), artistId));
             return adapter;
         });
         logger.debug("Fetched albums: {}", albums);
+    }
+
+    private List<AlbumSimplified> filterAlbumsByArtistId(List<AlbumSimplified> albums, String artistId) {
+        return albums.stream()
+                .filter((album) -> containsArtistWithId(album.getArtists(), artistId))
+                .toList();
+    }
+
+    private boolean containsArtistWithId(ArtistSimplified[] artists, String artistId) {
+        return Arrays.stream(artists).anyMatch((artist) -> artist.getId().equals(artistId));
     }
 }

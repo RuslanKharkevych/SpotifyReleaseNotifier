@@ -73,18 +73,21 @@ public class SpotifyFixtures {
 
     public static final AlbumSimplified NEW_ALBUM = new AlbumSimplified.Builder()
             .setId("b4e85e7d-36de-4172-bf74-be05aa07bd7f")
+            .setArtists(new ArtistSimplified.Builder().setId(ARTIST1.getId()).build())
             .setReleaseDate(LocalDate.now(CLOCK).toString())
             .setExternalUrls(buildExternalUrls(NEW_ALBUM_URL))
             .build();
 
     public static final AlbumSimplified OLD_ALBUM = new AlbumSimplified.Builder()
             .setId("a122a423-d83e-41f8-a17d-dc87669be5e6")
+            .setArtists(new ArtistSimplified.Builder().setId(ARTIST1.getId()).build())
             .setReleaseDate(LocalDate.now(CLOCK).minusDays(1).toString())
             .setExternalUrls(buildExternalUrls("https://open.spotify.com/album/1gf4tdMN4aMMYEkXeUJTKG"))
             .build();
 
     public static final AlbumSimplified ALBUM_WITH_UNKNOWN_DATE = new AlbumSimplified.Builder()
             .setId("dda5de87-57fe-490c-94cd-10512e240329")
+            .setArtists(new ArtistSimplified.Builder().setId(ARTIST2.getId()).build())
             .setReleaseDate("2024")
             .setExternalUrls(buildExternalUrls("https://open.spotify.com/album/3uei5LFX4boIwVER1zdLD8"))
             .build();
